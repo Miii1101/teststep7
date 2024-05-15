@@ -58,20 +58,34 @@ class ProductController extends Controller
         ]);
     }
 
-    // 削除処理
+   // 削除処理
     public function destroy($id) {
-        $product = Product::findOrFail($id);
-        $product->delete();
-    
-        return redirect()->route('product.index')->with('success', '商品を削除しました');
+        try {
+            // IDに対応する商品を取得し、削除する
+            $product = Product::findOrFail($id);
+            $product->delete();
+        
+            // 削除成功時は商品一覧ページにリダイレクトし、成功メッセージを表示
+            return redirect()->route('product.index')->with('success', '商品を削除しました');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // 商品が見つからない場合はエラーメッセージを表示し、商品一覧ページにリダイレクト
+            return redirect()->route('product.index')->with('error', '指定された商品が見つかりませんでした');
+        }
     }
 
-    //商品登録
+    // 商品登録
     public function create() {
+        try {
+    // 企業名とIDのリストを取得し、ビューに渡す
         $companies = Company::pluck('company_name', 'id')->all();
-        return view('create',[
-            'companies' => $companies,  
+        return view('create', [
+            'companies' => $companies,
         ]);
+        } catch (\Exception $e) {
+    // 例外が発生した場合はエラーページにリダイレクト
+            return redirect()->route('error.page')->with('error', '企業名の取得に失敗しました');
+        }
     }
 
     public function store(ProductRequest $request) {
@@ -95,16 +109,20 @@ class ProductController extends Controller
 
     // 商品詳細画面表示
     public function show($id) {
-    $product = Product::findOrFail($id);
-    return view('detail', ['product' => $product]);
+        $product = Product::findOrFail($id);
+        return view('detail', ['product' => $product]);
     }
 
     
     // 商品編集画面表示
     public function edit($id) {
-        $product = Product::findOrFail($id);
-        $companies = Company::all();
-        return view('edit', compact('product', 'companies'));
+        try {
+            $product = Product::findOrFail($id);
+            $companies = Company::all();
+            return view('edit', compact('product', 'companies'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('product.index')->with('error', '商品が見つかりませんでした');
+        }
     }
     
     // 商品更新処理
