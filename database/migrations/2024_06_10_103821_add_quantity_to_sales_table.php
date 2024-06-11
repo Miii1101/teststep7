@@ -4,19 +4,29 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class RemoveTimestampsFromSales extends Migration
+return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->dropTimestamps();
+            $table->integer('quantity')->unsigned()->default(1);
         });
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
         Schema::table('sales', function (Blueprint $table) {
-            // down メソッドでは、元の状態に戻す必要がないため、このメソッドの内容は空にする
+            $table->dropColumn('quantity');
         });
     }
-}
+};

@@ -41,20 +41,43 @@ class ProductController extends Controller
         }
     
         if ($selectedCompany) {
-            // メーカー名からメーカーIDを取得して絞り込む
             $companyId = Company::where('company_name', $selectedCompany)->value('id');
             $query->where('company_id', $companyId);
         }
     
-        $products = $query->get();
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->price_min);
+        }
     
-        // メーカー名の選択肢もビューに渡す
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->price_max);
+        }
+    
+        if ($request->filled('stock_min')) {
+            $query->where('stock', '>=', $request->stock_min);
+        }
+    
+        if ($request->filled('stock_max')) {
+            $query->where('stock', '<=', $request->stock_max);
+        }
+    
+        $products = $query->with('company')->sortable()->get();
         $companies = Company::pluck('company_name', 'id')->toArray();
-      
+    
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('index', [
+                    'products' => $products,
+                    'selectedCompany' => $selectedCompany,
+                    'companies' => $companies,
+                ])->render()
+            ]);
+        }
+    
         return view('index', [
             'products' => $products,
             'selectedCompany' => $selectedCompany,
-            'companies' => $companies, 
+            'companies' => $companies,
         ]);
     }
 
@@ -65,14 +88,13 @@ class ProductController extends Controller
             $product = Product::findOrFail($id);
             $product->delete();
         
-            // 削除成功時は商品一覧ページにリダイレクトし、成功メッセージを表示
-            return redirect()->route('product.index')->with('success', '商品を削除しました');
+            return redirect()->route('product.index');
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // 商品が見つからない場合はエラーメッセージを表示し、商品一覧ページにリダイレクト
-            return redirect()->route('product.index')->with('error', '指定された商品が見つかりませんでした');
-        }
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        // 商品が見つからない場合はエラーメッセージを表示し、商品一覧ページにリダイレクト
+        return redirect()->route('product.index')->with('error', '指定された商品が見つかりませんでした');
     }
+}
 
     // 商品登録
     public function create() {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Kyslik\ColumnSortable\Sortable;
 
 class Product extends Model
 {
@@ -18,6 +19,11 @@ class Product extends Model
         'comment',
         'created_at',
         'updated_at',
+    ];
+
+    use Sortable;
+    public $sortable = [
+        'id', 'product_name', 'price', 'stock', 'company_id'
     ];
 
     // ProductモデルとCompanyモデルのリレーションシップを定義

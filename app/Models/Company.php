@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Kyslik\ColumnSortable\Sortable;
 
 class Company extends Model
 {
@@ -16,6 +17,13 @@ class Company extends Model
     protected $fillable = [
         'company_name',
         'street_address',
-        'representative_name',
+        'representative_name'
+    ];
+
+    // ソート機能追加
+    use Sortable;
+    public $sortable = [
+        'id',
+        'company_name'
     ];
 }
